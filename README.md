@@ -21,6 +21,57 @@
   <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
+## Recommended Folder Structure
+
+```
+src/
+├── main.ts                          # Application entry point
+├── app.module.ts                    # Root module of the application
+├── modules/                         # Feature modules
+│   ├── todos/                       # Todo feature module
+│   │   ├── dto/                     # Data Transfer Objects for todos
+│   │   ├── entities/                # Todo entity definitions
+│   │   ├── repositories/            # Repository layer for todos
+│   │   ├── todos.controller.ts      # Controller for todos
+│   │   ├── todos.service.ts         # Service for todos
+│   │   ├── todos.module.ts          # Module definition
+│   │   └── tests/                   # Unit and integration tests
+│   ├── auth/                        # Authentication module
+│   │   ├── dto/
+│   │   ├── strategies/              # Passport strategies
+│   │   ├── guards/                  # Authentication guards
+│   │   ├── auth.controller.ts
+│   │   ├── auth.service.ts
+│   │   └── auth.module.ts
+│   └── users/                       # User module
+│       ├── dto/
+│       ├── entities/
+│       ├── repositories/
+│       ├── users.controller.ts
+│       ├── users.service.ts
+│       └── users.module.ts
+├── common/                          # Shared resources
+│   ├── decorators/                  # Custom decorators
+│   ├── filters/                     # Exception filters
+│   ├── guards/                      # Global guards
+│   ├── interceptors/                # Global interceptors
+│   ├── interfaces/                  # Common interfaces
+│   ├── middleware/                  # Custom middleware
+│   ├── pipes/                       # Custom pipes
+│   └── logger/                      # Custom logger implementation
+├── config/                          # Configuration
+│   ├── database.config.ts           # Database configuration
+│   ├── app.config.ts                # App configuration
+│   └── validation.schema.ts         # Configuration validation
+├── core/                            # Core functionality
+│   ├── database/                    # Database related code
+│   ├── exceptions/                  # Custom exceptions
+│   └── utilities/                   # Common utility functions
+└── prisma/                          # Prisma service and client
+    ├── prisma.module.ts
+    └── prisma.service.ts
+```
+
 ## Description
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.

@@ -3,7 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Profile, Strategy, VerifyCallback } from 'passport-google-oauth20';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from '../auth.service';
-import { AppLogger } from '../../common/logger/app-logger.service';
+import { AppLogger } from '@common/logger/app-logger.service';
 
 interface GoogleProfile {
   email: string;
