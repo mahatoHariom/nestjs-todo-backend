@@ -4,10 +4,10 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '@core/database/prisma/prisma.service';
 import { RegisterDto, LoginDto } from './dto/auth.dto';
 import * as bcrypt from 'bcrypt';
-import { AppLogger } from '../common/logger/app-logger.service';
+import { AppLogger } from '@common/logger/app-logger.service';
 import { User } from '@prisma/client';
 
 // Define the authenticated user type using Pick to select specific properties from User
