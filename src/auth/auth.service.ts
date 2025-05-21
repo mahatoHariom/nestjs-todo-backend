@@ -2,13 +2,14 @@ import {
   Injectable,
   UnauthorizedException,
   ConflictException,
+  Inject,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto, LoginDto } from './dto/auth.dto';
 import * as bcrypt from 'bcrypt';
 import { AppLogger } from '../common/logger/app-logger.service';
 import { User } from '@prisma/client';
+import { UserRepositoryInterface } from './interfaces/repository/user.repository.interface';
 
 // Define the authenticated user type using Pick to select specific properties from User
 type AuthenticatedUser = Pick<User, 'id' | 'email'> & {
@@ -28,33 +29,25 @@ interface GoogleUser {
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly prisma: PrismaService,
+    @Inject('UserRepositoryInterface')
+    private readonly userRepository: UserRepositoryInterface,
     private readonly jwtService: JwtService,
     private readonly logger: AppLogger,
-  ) {}
+  ) {
+    this.logger.setContext(AuthService.name);
+  }
 
   async register(registerDto: RegisterDto): Promise<AuthenticatedUser> {
-    const { email, password, name } = registerDto;
+    const { email } = registerDto;
 
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email },
-    });
+    const existingUser = await this.userRepository.findByEmail(email);
 
     if (existingUser) {
       this.logger.warn(`Registration attempt with existing email: ${email}`);
       throw new ConflictException('Email already exists');
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const user = await this.prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        name,
-        authProvider: 'local',
-      },
-    });
+    const user = await this.userRepository.createUser(registerDto);
 
     this.logger.log(`User registered successfully: ${user.id}`);
 
@@ -77,9 +70,7 @@ export class AuthService {
   async login(loginDto: LoginDto): Promise<AuthenticatedUser> {
     const { email, password } = loginDto;
 
-    const user = await this.prisma.user.findUnique({
-      where: { email },
-    });
+    const user = await this.userRepository.findByEmail(email);
 
     if (!user) {
       this.logger.warn(`Login attempt with non-existent email: ${email}`);
@@ -127,23 +118,40 @@ export class AuthService {
       `Google profile details: firstName=${firstName}, lastName=${lastName}, picture=${picture ? 'present' : 'absent'}`,
     );
 
-    let user = await this.prisma.user.findUnique({
-      where: { email },
-    });
+    let user = await this.userRepository.findByEmail(email);
 
     if (!user) {
-      return await this.createGoogleUser(email, firstName, lastName, picture);
+      const fullName = `${firstName} ${lastName}`.trim();
+      user = await this.userRepository.createGoogleUser(
+        email,
+        fullName,
+        picture || null,
+      );
+
+      this.logger.log(`New Google user created with ID: ${user.id}`);
+
+      const token = this.generateToken(
+        user.id,
+        user.email,
+        user.name,
+        user.profilePicture,
+      );
+
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.name || null,
+        token,
+        picture: user.profilePicture || null,
+      };
     } else if (user.authProvider !== 'google') {
       this.logger.debug(
         `Updating existing user (id=${user.id}) to use Google auth`,
       );
 
-      user = await this.prisma.user.update({
-        where: { id: user.id },
-        data: {
-          authProvider: 'google',
-          profilePicture: picture || null,
-        },
+      user = await this.userRepository.updateUser(user.id, {
+        authProvider: 'google',
+        profilePicture: picture || null,
       });
 
       this.logger.log(`Existing user updated to use Google auth: ${user.id}`);
@@ -164,45 +172,6 @@ export class AuthService {
       const tokenPrefix = token.substring(0, 15) + '...';
       this.logger.debug(`Generated token: ${tokenPrefix}`);
     }
-
-    return {
-      id: user.id,
-      email: user.email,
-      name: user.name || null,
-      token,
-      picture: user.profilePicture || null,
-    };
-  }
-
-  async createGoogleUser(
-    email: string,
-    firstName: string,
-    lastName: string,
-    picture: string,
-  ): Promise<AuthenticatedUser> {
-    this.logger.debug(`Creating Google user for email: ${email}`);
-
-    const name = `${firstName} ${lastName}`.trim();
-    this.logger.debug(`Full name for Google user: "${name}"`);
-
-    const user = await this.prisma.user.create({
-      data: {
-        email,
-        name,
-        password: '',
-        authProvider: 'google',
-        profilePicture: picture || null,
-      },
-    });
-
-    this.logger.log(`New Google user created with ID: ${user.id}`);
-
-    const token = this.generateToken(
-      user.id,
-      user.email,
-      user.name,
-      user.profilePicture,
-    );
 
     return {
       id: user.id,

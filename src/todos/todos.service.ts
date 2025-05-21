@@ -1,13 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import { CreateTodoDto, UpdateTodoDto } from './dto/todo.dto';
-import { TodoRepository } from './repositories/todo.repository';
-
 import { AppLogger } from '../common/logger/app-logger.service';
+import { TodoRepositoryInterface } from './interfaces/repository/todo.repository.interface';
 
 @Injectable()
 export class TodosService {
   constructor(
-    private readonly todoRepository: TodoRepository,
+    @Inject('TodoRepositoryInterface')
+    private readonly todoRepository: TodoRepositoryInterface,
     private readonly logger: AppLogger,
   ) {
     this.logger.setContext(TodosService.name);
