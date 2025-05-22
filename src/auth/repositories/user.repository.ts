@@ -63,4 +63,22 @@ export class UserRepository implements UserRepositoryInterface {
       },
     });
   }
+
+  async createAmazonUser(
+    email: string,
+    name: string,
+    picture: string | null,
+  ): Promise<User> {
+    this.logger.debug(`Creating Amazon user with email: ${email}`);
+
+    return this.prisma.user.create({
+      data: {
+        email,
+        name,
+        password: '',
+        authProvider: 'amazon',
+        profilePicture: picture,
+      },
+    });
+  }
 }

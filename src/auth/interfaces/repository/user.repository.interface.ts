@@ -10,4 +10,9 @@ export interface UserRepositoryInterface {
     name: string,
     picture: string | null,
   ): Promise<User>;
+  createAmazonUser(
+    email: string,
+    name: string,
+    picture: string | null,
+  ): Promise<User>;
 }

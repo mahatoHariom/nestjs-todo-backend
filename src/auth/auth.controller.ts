@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   Controller,
   Post,
@@ -23,6 +26,14 @@ interface GoogleUser {
   firstName: string;
   lastName: string;
   picture: string;
+  accessToken: string;
+}
+
+interface AmazonUser {
+  email: string;
+  name: string;
+  userId: string;
+  picture?: string;
   accessToken: string;
 }
 
@@ -111,7 +122,90 @@ export class AuthController {
       const frontendUrl =
         this.configService.get<string>('FRONTEND_URL') ||
         'http://localhost:5173';
-      return res.redirect(302, `${frontendUrl}/login?auth_error=true`);
+      return res.redirect(
+        302,
+        `${frontendUrl}/login?auth_error=true&provider=google`,
+      );
+    }
+  }
+
+  @Get('amazon')
+  @UseGuards(AuthGuard('amazon'))
+  @ApiOperation({ summary: 'Initiate Amazon OAuth authentication' })
+  @ApiResponse({
+    status: 302,
+    description: 'Redirect to Amazon authentication page',
+  })
+  amazonAuth(@Req() req: Request) {
+    // Simply log that authentication was initiated
+    this.logger.debug('Amazon authentication initiated');
+
+    // Log if scope parameter was provided
+    if (req.query && req.query.scope) {
+      this.logger.debug('Custom scopes requested for Amazon auth');
+    }
+  }
+
+  @Get('amazon/callback')
+  @UseGuards(AuthGuard('amazon'))
+  @ApiOperation({ summary: 'Handle Amazon OAuth callback' })
+  @ApiResponse({ status: 302, description: 'Redirect to frontend with token' })
+  async amazonAuthCallback(@Req() req: Request, @Res() res: Response) {
+    try {
+      this.logger.debug('Amazon auth callback received');
+
+      if (!req.user) {
+        this.logger.error(
+          'Amazon authentication failed: No user data received',
+        );
+        throw new UnauthorizedException('Authentication failed');
+      }
+
+      // Detailed logging of the user object received from the strategy
+      this.logger.debug('User data received from Amazon strategy:');
+      this.logger.debug(JSON.stringify(req.user, null, 2));
+
+      // Check specifically for email presence
+      const userData = req.user as any;
+      this.logger.debug(`Email present in user data: ${!!userData.email}`);
+      if (!userData.email) {
+        this.logger.error('Email missing in Amazon user data');
+        throw new UnauthorizedException('Email missing in authentication data');
+      }
+
+      const result = await this.authService.validateOrCreateAmazonUser(
+        req.user as AmazonUser,
+      );
+
+      if (!result || !result.token) {
+        this.logger.error('Failed to get token for Amazon user');
+        throw new UnauthorizedException('Authentication failed');
+      }
+
+      // Get frontend URL from configuration (providing proper fallbacks)
+      const frontendUrl =
+        this.configService.get<string>('FRONTEND_URL') ||
+        'http://localhost:5173';
+
+      // Use the specific /auth/callback path that React Router is configured to handle
+      const redirectUrl = `${frontendUrl}/auth/callback?token=${result.token}`;
+
+      this.logger.debug(`Redirecting to frontend: ${redirectUrl}`);
+
+      return res.redirect(302, redirectUrl);
+    } catch (error) {
+      this.logger.error(
+        `Amazon auth callback error: ${error instanceof Error ? error.message : String(error)}`,
+      );
+
+      // In case of error, redirect to frontend login page with error parameter
+      const frontendUrl =
+        this.configService.get<string>('FRONTEND_URL') ||
+        'http://localhost:5173';
+      return res.redirect(
+        302,
+        `${frontendUrl}/login?auth_error=true&provider=amazon`,
+      );
     }
   }
 }
