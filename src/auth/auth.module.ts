@@ -5,6 +5,7 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
+import { AmazonStrategy } from './strategies/amazon.strategy';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UserRepository } from './repositories/user.repository';
 import { CommonModule } from '../common/common.module';
@@ -29,6 +30,7 @@ import { CommonModule } from '../common/common.module';
     AuthService,
     JwtStrategy,
     GoogleStrategy,
+    AmazonStrategy,
     UserRepository,
     {
       provide: 'UserRepositoryInterface',

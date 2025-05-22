@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import {
   Injectable,
   UnauthorizedException,
@@ -23,6 +25,14 @@ interface GoogleUser {
   firstName: string;
   lastName: string;
   picture: string;
+  accessToken: string;
+}
+
+interface AmazonUser {
+  email: string;
+  name: string;
+  userId: string;
+  picture?: string;
   accessToken: string;
 }
 
@@ -155,6 +165,78 @@ export class AuthService {
       });
 
       this.logger.log(`Existing user updated to use Google auth: ${user.id}`);
+    }
+
+    this.logger.debug(
+      `User data for token: id=${user.id}, email=${user.email}, name=${user.name || 'null'}, picture=${user.profilePicture ? 'present' : 'null'}`,
+    );
+
+    const token = this.generateToken(
+      user.id,
+      user.email,
+      user.name,
+      user.profilePicture,
+    );
+
+    if (token) {
+      const tokenPrefix = token.substring(0, 15) + '...';
+      this.logger.debug(`Generated token: ${tokenPrefix}`);
+    }
+
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name || null,
+      token,
+      picture: user.profilePicture || null,
+    };
+  }
+
+  async validateOrCreateAmazonUser(
+    amazonUser: AmazonUser,
+  ): Promise<AuthenticatedUser> {
+    const { email, name, picture } = amazonUser;
+    this.logger.debug(`Amazon login attempt for: ${email}`);
+    this.logger.debug(
+      `Amazon profile details: name=${name}, picture=${picture ? 'present' : 'absent'}`,
+    );
+
+    let user = await this.userRepository.findByEmail(email);
+
+    if (!user) {
+      user = await this.userRepository.createAmazonUser(
+        email,
+        name,
+        picture || null,
+      );
+
+      this.logger.log(`New Amazon user created with ID: ${user.id}`);
+
+      const token = this.generateToken(
+        user.id,
+        user.email,
+        user.name,
+        user.profilePicture,
+      );
+
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.name || null,
+        token,
+        picture: user.profilePicture || null,
+      };
+    } else if (user.authProvider !== 'amazon') {
+      this.logger.debug(
+        `Updating existing user (id=${user.id}) to use Amazon auth`,
+      );
+
+      user = await this.userRepository.updateUser(user.id, {
+        authProvider: 'amazon',
+        profilePicture: picture || null,
+      });
+
+      this.logger.log(`Existing user updated to use Amazon auth: ${user.id}`);
     }
 
     this.logger.debug(
