@@ -7,7 +7,8 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-amazon';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from '../auth.service';
-import { AppLogger } from '../../common/logger/app-logger.service';
+import { AppLogger } from '@app/common/logger/app-logger.service';
+// import { AppLogger } from '../../common/logger/app-logger.service';
 
 type AmazonProfile = {
   email: string;

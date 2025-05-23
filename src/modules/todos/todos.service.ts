@@ -1,8 +1,9 @@
 import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import { CreateTodoDto, UpdateTodoDto } from './dto/todo.dto';
-import { AppLogger } from '../common/logger/app-logger.service';
-import { TodoRepositoryInterface } from './interfaces/repository/todo.repository.interface';
 
+// import { TodoRepository } from './repositories/todo.repository';
+import { AppLogger } from '@common/logger/app-logger.service';
+import { TodoRepositoryInterface } from '@app/todos/interfaces/repository/todo.repository.interface';
 @Injectable()
 export class TodosService {
   constructor(

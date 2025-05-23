@@ -1,9 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
+import { PrismaService } from '@core/database/prisma/prisma.service';
 import { CreateTodoDto, UpdateTodoDto } from '../dto/todo.dto';
-import { AppLogger } from '../../common/logger/app-logger.service';
-import { TodoRepositoryInterface } from '../interfaces/repository/todo.repository.interface';
+
+// import { AppLogger } from '../../common/logger/app-logger.service';
+// import { TodoRepositoryInterface } from '../interfaces/repository/todo.repository.interface';
 import { Todo } from '@prisma/client';
+
+import { AppLogger } from '@common/logger/app-logger.service';
+import { TodoRepositoryInterface } from '@app/todos/interfaces/repository/todo.repository.interface';
 
 @Injectable()
 export class TodoRepository implements TodoRepositoryInterface {

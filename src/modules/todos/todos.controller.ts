@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { TodosService } from './todos.service';
 import { CreateTodoDto, UpdateTodoDto } from './dto/todo.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard';
 import {
   ApiTags,
   ApiOperation,
@@ -18,9 +18,9 @@ import {
   ApiBearerAuth,
   ApiParam,
 } from '@nestjs/swagger';
-import { AuthUser } from '../auth/interfaces/user.interface';
-import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { AppLogger } from 'src/common/logger/app-logger.service';
+import { AuthUser } from '@modules/auth/interfaces/user.interface';
+import { CurrentUser } from '@modules/auth/decorators/current-user.decorator';
+import { AppLogger } from '@common/logger/app-logger.service';
 
 @ApiTags('Todos')
 @ApiBearerAuth()

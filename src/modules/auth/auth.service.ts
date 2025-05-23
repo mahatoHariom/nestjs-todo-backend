@@ -7,13 +7,12 @@ import {
   Inject,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+// import { PrismaService } from '@core/database/prisma/prisma.service';
 import { RegisterDto, LoginDto } from './dto/auth.dto';
 import * as bcrypt from 'bcrypt';
-import { AppLogger } from '../common/logger/app-logger.service';
+import { AppLogger } from '@common/logger/app-logger.service';
 import { User } from '@prisma/client';
-import { UserRepositoryInterface } from './interfaces/repository/user.repository.interface';
-
-// Define the authenticated user type using Pick to select specific properties from User
+import { UserRepositoryInterface } from '@app/auth/interfaces/repository/user.repository.interface';
 type AuthenticatedUser = Pick<User, 'id' | 'email'> & {
   name: string | null;
   token: string;
