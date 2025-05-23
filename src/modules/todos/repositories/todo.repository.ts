@@ -1,16 +1,24 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@core/database/prisma/prisma.service';
 import { CreateTodoDto, UpdateTodoDto } from '../dto/todo.dto';
+
+// import { AppLogger } from '../../common/logger/app-logger.service';
+// import { TodoRepositoryInterface } from '../interfaces/repository/todo.repository.interface';
+import { Todo } from '@prisma/client';
+
 import { AppLogger } from '@common/logger/app-logger.service';
+import { TodoRepositoryInterface } from '@app/todos/interfaces/repository/todo.repository.interface';
 
 @Injectable()
-export class TodoRepository {
+export class TodoRepository implements TodoRepositoryInterface {
   constructor(
     private readonly prisma: PrismaService,
     private readonly logger: AppLogger,
-  ) {}
+  ) {
+    this.logger.setContext(TodoRepository.name);
+  }
 
-  async create(userId: number, createTodoDto: CreateTodoDto) {
+  async create(userId: number, createTodoDto: CreateTodoDto): Promise<Todo> {
     this.logger.debug(`Creating todo for user: ${userId}`);
 
     return this.prisma.todo.create({
@@ -22,7 +30,7 @@ export class TodoRepository {
     });
   }
 
-  async findAll(userId: number) {
+  async findAll(userId: number): Promise<Todo[]> {
     this.logger.debug(`Finding all todos for user: ${userId}`);
 
     return this.prisma.todo.findMany({
@@ -31,7 +39,7 @@ export class TodoRepository {
     });
   }
 
-  async findOne(id: number, userId: number) {
+  async findOne(id: number, userId: number): Promise<Todo | null> {
     this.logger.debug(`Finding todo with id: ${id} for user: ${userId}`);
 
     return this.prisma.todo.findFirst({
@@ -39,7 +47,11 @@ export class TodoRepository {
     });
   }
 
-  async update(id: number, userId: number, updateTodoDto: UpdateTodoDto) {
+  async update(
+    id: number,
+    userId: number,
+    updateTodoDto: UpdateTodoDto,
+  ): Promise<Todo> {
     this.logger.debug(`Updating todo with id: ${id} for user: ${userId}`);
 
     return this.prisma.todo.update({
@@ -53,7 +65,7 @@ export class TodoRepository {
     });
   }
 
-  async remove(id: number, userId: number) {
+  async remove(id: number, userId: number): Promise<Todo> {
     this.logger.debug(`Removing todo with id: ${id} for user: ${userId}`);
 
     return this.prisma.todo.delete({
