@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { User } from '@prisma/client';
-import { PrismaService } from '../../prisma/prisma.service';
-import { RegisterDto } from '../dto/auth.dto';
+// import { PrismaService } from '../../prisma/prisma.service';
+import { RegisterDto } from '../../modules/auth/dto/auth.dto';
 import { UserRepositoryInterface } from '../interfaces/repository/user.repository.interface';
 import { AppLogger } from '../../common/logger/app-logger.service';
 import * as bcrypt from 'bcrypt';
+import { PrismaService } from '@app/core';
 
 @Injectable()
 export class UserRepository implements UserRepositoryInterface {

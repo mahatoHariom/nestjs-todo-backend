@@ -7,8 +7,8 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { AmazonStrategy } from './strategies/amazon.strategy';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { UserRepository } from './repositories/user.repository';
-import { CommonModule } from '../common/common.module';
+import { UserRepository } from '../../auth/repositories/user.repository';
+import { CommonModule } from '../../common/common.module';
 
 @Module({
   imports: [

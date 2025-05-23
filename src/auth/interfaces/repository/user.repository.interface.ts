@@ -1,5 +1,5 @@
 import { User } from '@prisma/client';
-import { RegisterDto } from '../../dto/auth.dto';
+import { RegisterDto } from '../../../modules/auth/dto/auth.dto';
 
 export interface UserRepositoryInterface {
   findByEmail(email: string): Promise<User | null>;
